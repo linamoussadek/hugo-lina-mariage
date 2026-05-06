@@ -1,30 +1,28 @@
 import { Resend } from "resend"
 
-export async function POST(request: Request) {
-  try {
-    const body = await request.json()
-    const { guestName, guestCount, menu1Count, menu2Count, isSolo, soloMenu } = body
+const DEFAULT_FROM = "onboarding@resend.dev"
+const DEFAULT_NOTIFY = "moussadek.lina45@gmail.com"
 
-    // Build menu summary
-    let menuSummary = ""
-    if (isSolo) {
-      menuSummary = soloMenu === 1
-        ? "Menu 1 — Rôti de boeuf baron, sauce demi-glace"
-        : "Menu 2 — Poitrine de boeuf farcie aux épinards, sauce suprême"
-    } else {
-      if (menu1Count > 0) menuSummary += `${menu1Count}x Menu 1 — Rôti de boeuf baron\n`
-      if (menu2Count > 0) menuSummary += `${menu2Count}x Menu 2 — Poitrine de boeuf farcie aux épinards`
-    }
+function buildMenuSummary(body: {
+  isSolo: boolean
+  soloMenu?: number
+  menu1Count: number
+  menu2Count: number
+}) {
+  const { isSolo, soloMenu, menu1Count, menu2Count } = body
+  if (isSolo) {
+    return soloMenu === 1
+      ? "Menu 1 — Rôti de boeuf baron, sauce demi-glace"
+      : "Menu 2 — Poitrine de boeuf farcie aux épinards, sauce suprême"
+  }
+  let s = ""
+  if (menu1Count > 0) s += `${menu1Count}x Menu 1 — Rôti de boeuf baron, sauce demi-glace\n`
+  if (menu2Count > 0) s += `${menu2Count}x Menu 2 — Poitrine de boeuf farcie aux épinards`
+  return s
+}
 
-    // Only send email if API key is set
-    if (process.env.RESEND_API_KEY) {
-      const resend = new Resend(process.env.RESEND_API_KEY)
-      
-      const response = await resend.emails.send({
-        from: "onboarding@resend.dev",
-        to: "moussadek.lina45@gmail.com",
-        subject: `RSVP reçu — ${guestName}`,
-        html: `
+function rsvpEmailHtml(guestName: string, menuSummary: string, isSolo: boolean, guestCount: number) {
+  return `
         <div style="font-family: Georgia, serif; max-width: 600px; margin: 0 auto; padding: 40px 20px;">
           <div style="text-align: center; margin-bottom: 30px;">
             <p style="color: #d4a574; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; margin: 0 0 10px;">CONFIRMATION DE PRÉSENCE</p>
@@ -33,7 +31,7 @@ export async function POST(request: Request) {
 
           <div style="background: #f9f7f4; border: 1px solid rgba(0,0,0,0.1); border-radius: 12px; padding: 24px; margin-bottom: 24px;">
             <p style="color: #666; font-size: 14px; margin: 0 0 16px;">Un RSVP a été reçu :</p>
-            
+
             <div style="space-y: 12px;">
               <div style="margin-bottom: 12px;">
                 <p style="color: #999; font-size: 12px; margin: 0; text-transform: uppercase; letter-spacing: 1px;">Groupe</p>
@@ -59,18 +57,51 @@ export async function POST(request: Request) {
             <p style="margin: 4px 0 0;">Chez les Blouin, Ottawa</p>
           </div>
         </div>
-      `,
+      `
+}
+
+export async function POST(request: Request) {
+  try {
+    const body = await request.json()
+    const { guestName, guestCount, menu1Count, menu2Count, isSolo, soloMenu } = body
+
+    const menuSummary = buildMenuSummary({
+      isSolo,
+      soloMenu,
+      menu1Count: Number(menu1Count) || 0,
+      menu2Count: Number(menu2Count) || 0,
     })
+
+    const from = process.env.RESEND_FROM_EMAIL?.trim() || DEFAULT_FROM
+    const to = process.env.RSVP_NOTIFY_EMAIL?.trim() || DEFAULT_NOTIFY
+    const ccRaw = process.env.RSVP_CC_EMAIL?.trim()
+    const cc = ccRaw ? ccRaw.split(",").map((e) => e.trim()).filter(Boolean) : undefined
+
+    if (process.env.RESEND_API_KEY) {
+      const resend = new Resend(process.env.RESEND_API_KEY)
+
+      const response = await resend.emails.send({
+        from,
+        to,
+        ...(cc?.length ? { cc } : {}),
+        subject: `RSVP reçu — ${guestName}`,
+        html: rsvpEmailHtml(guestName, menuSummary, isSolo, guestCount),
+      })
 
       if (response.error) {
         console.error("Resend email error:", response.error)
-        // Still return success — the RSVP is noted, email just failed
       }
     } else {
-      console.log("RESEND_API_KEY not set — skipping email, RSVP data:", { guestName, guestCount, menu1Count, menu2Count, isSolo, soloMenu })
+      console.log("RESEND_API_KEY not set — skipping email, RSVP data:", {
+        guestName,
+        guestCount,
+        menu1Count,
+        menu2Count,
+        isSolo,
+        soloMenu,
+      })
     }
 
-    // Always return success so the guest sees the confirmation page
     return Response.json({ success: true, message: "RSVP enregistré" }, { status: 200 })
   } catch (error) {
     console.error("RSVP API error:", error)
