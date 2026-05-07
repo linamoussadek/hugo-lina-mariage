@@ -46,6 +46,12 @@ export function RSVPSection({ guestName = "Giguère", maxGuests = 4, isSolo = fa
       })
 
       if (response.ok) {
+        const data = (await response.json()) as { emailSent?: boolean }
+        if (data.emailSent === false) {
+          console.warn(
+            "RSVP enregistré côté serveur mais aucun courriel de notification n'a été envoyé (vérifiez SMTP_PASS / rollback Firebase).",
+          )
+        }
         setSubmitted(true)
       } else {
         console.error("RSVP submission failed")

@@ -5,6 +5,23 @@ export const runtime = "nodejs"
 const DEFAULT_FROM = "hugoblouin@gmail.com"
 const DEFAULT_NOTIFY = ["hugoblouin@gmail.com", "moussadek.lina45@gmail.com"]
 
+/** Firebase / Cloud Run inject secrets at runtime; bracket access avoids build-time inlining of missing vars. */
+function runtimeEnv(name: string): string | undefined {
+  const v = process.env[name]
+  return typeof v === "string" ? v : undefined
+}
+
+function smtpPassword(): string | undefined {
+  const candidates = [
+    runtimeEnv("SMTP_PASS"),
+    runtimeEnv("SMTP_PASSWORD"),
+    runtimeEnv("GMAIL_APP_PASSWORD"),
+    runtimeEnv("EMAIL_PASSWORD"),
+  ]
+  const pass = candidates.find((p) => p?.trim())
+  return pass?.trim()
+}
+
 function parseEmailList(raw: string | undefined): string[] | undefined {
   if (!raw?.trim()) return undefined
   const list = raw.split(",").map((e) => e.trim()).filter(Boolean)
@@ -80,22 +97,30 @@ export async function POST(request: Request) {
       menu2Count: Number(menu2Count) || 0,
     })
 
-    const smtpPass = process.env.SMTP_PASS?.trim()
-    const from = process.env.SMTP_FROM?.trim() || DEFAULT_FROM
-    const to = parseEmailList(process.env.RSVP_NOTIFY_EMAIL) ?? DEFAULT_NOTIFY
-    const cc = parseEmailList(process.env.RSVP_CC_EMAIL)
+    const smtpPass = smtpPassword()
+    const from = runtimeEnv("SMTP_FROM")?.trim() || DEFAULT_FROM
+    const smtpUser = runtimeEnv("SMTP_USER")?.trim() || from
+    const to = parseEmailList(runtimeEnv("RSVP_NOTIFY_EMAIL")) ?? DEFAULT_NOTIFY
+    const cc = parseEmailList(runtimeEnv("RSVP_CC_EMAIL"))
+
+    let emailSent = false
 
     if (smtpPass) {
-      const port = Number(process.env.SMTP_PORT) || 465
-      const transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST?.trim() || "smtp.gmail.com",
-        port,
-        secure: port === 465,
-        auth: {
-          user: process.env.SMTP_USER?.trim() || from,
-          pass: smtpPass,
-        },
-      })
+      const host = runtimeEnv("SMTP_HOST")?.trim() || "smtp.gmail.com"
+      const port = Number(runtimeEnv("SMTP_PORT")) || 465
+      const useGmailShortcut = host === "smtp.gmail.com"
+
+      const transporter = useGmailShortcut
+        ? nodemailer.createTransport({
+            service: "gmail",
+            auth: { user: smtpUser, pass: smtpPass },
+          })
+        : nodemailer.createTransport({
+            host,
+            port,
+            secure: port === 465,
+            auth: { user: smtpUser, pass: smtpPass },
+          })
 
       try {
         await transporter.sendMail({
@@ -105,11 +130,15 @@ export async function POST(request: Request) {
           subject: `RSVP reçu — ${guestName}`,
           html: rsvpEmailHtml(guestName, menuSummary, isSolo, guestCount),
         })
+        emailSent = true
       } catch (mailErr) {
-        console.error("Nodemailer send error:", mailErr)
+        console.error("Nodemailer send error (RSVP email not delivered):", mailErr)
       }
     } else {
-      console.log("SMTP_PASS not set — skipping email, RSVP data:", {
+      console.warn(
+        "RSVP email skipped: no SMTP password in env (expected SMTP_PASS or SMTP_PASSWORD / GMAIL_APP_PASSWORD).",
+      )
+      console.log("RSVP payload (no mail):", {
         guestName,
         guestCount,
         menu1Count,
@@ -119,7 +148,14 @@ export async function POST(request: Request) {
       })
     }
 
-    return Response.json({ success: true, message: "RSVP enregistré" }, { status: 200 })
+    return Response.json(
+      {
+        success: true,
+        message: "RSVP enregistré",
+        emailSent,
+      },
+      { status: 200 },
+    )
   } catch (error) {
     console.error("RSVP API error:", error)
     return Response.json({ error: "Erreur lors du traitement du RSVP" }, { status: 500 })

@@ -7,17 +7,24 @@ runConfig:
   # cpu: 1
   # memoryMiB: 512
 
-# Environment variables and secrets.
+# Environment variables — prefer Firebase Console: App Hosting → Backend → Settings → Environment.
+# (Console overrides values defined here.) Duplicate SMTP_* keys here AND in the console can fail rollouts.
+#
+# Optional — uncomment example entries ONLY if those variables are not already defined in the console:
+#
 # env:
-  # Configure environment variables.
-  # See https://firebase.google.com/docs/app-hosting/configure#user-defined-environment
-  # - variable: MESSAGE
-  #   value: Hello world!
-  #   availability:
-  #     - BUILD
-  #     - RUNTIME
-
-  # Grant access to secrets in Cloud Secret Manager.
-  # See https://firebase.google.com/docs/app-hosting/configure#secret-parameters
-  # - variable: MY_SECRET
-  #   secret: mySecretRef
+#   - variable: STORAGE_BUCKET
+#     value: mybucket.app
+#     availability:
+#       - BUILD
+#       - RUNTIME
+#
+# Secrets:
+#   npx -y firebase-tools@latest apphosting:secrets:set SMTP_PASS --data-file=-
+#   firebase apphosting:secrets:grantaccess ...
+#
+#   - variable: SMTP_PASS
+#     secret: SMTP_PASS
+#     availability:
+#       - BUILD
+#       - RUNTIME
