@@ -1,7 +1,15 @@
-import { Resend } from "resend"
+import nodemailer from "nodemailer"
 
-const DEFAULT_FROM = "onboarding@resend.dev"
-const DEFAULT_NOTIFY = "moussadek.lina45@gmail.com"
+export const runtime = "nodejs"
+
+const DEFAULT_FROM = "hugoblouin@gmail.com"
+const DEFAULT_NOTIFY = ["hugoblouin@gmail.com", "moussadek.lina45@gmail.com"]
+
+function parseEmailList(raw: string | undefined): string[] | undefined {
+  if (!raw?.trim()) return undefined
+  const list = raw.split(",").map((e) => e.trim()).filter(Boolean)
+  return list.length ? list : undefined
+}
 
 function buildMenuSummary(body: {
   isSolo: boolean
@@ -72,27 +80,36 @@ export async function POST(request: Request) {
       menu2Count: Number(menu2Count) || 0,
     })
 
-    const from = process.env.RESEND_FROM_EMAIL?.trim() || DEFAULT_FROM
-    const to = process.env.RSVP_NOTIFY_EMAIL?.trim() || DEFAULT_NOTIFY
-    const ccRaw = process.env.RSVP_CC_EMAIL?.trim()
-    const cc = ccRaw ? ccRaw.split(",").map((e) => e.trim()).filter(Boolean) : undefined
+    const smtpPass = process.env.SMTP_PASS?.trim()
+    const from = process.env.SMTP_FROM?.trim() || DEFAULT_FROM
+    const to = parseEmailList(process.env.RSVP_NOTIFY_EMAIL) ?? DEFAULT_NOTIFY
+    const cc = parseEmailList(process.env.RSVP_CC_EMAIL)
 
-    if (process.env.RESEND_API_KEY) {
-      const resend = new Resend(process.env.RESEND_API_KEY)
-
-      const response = await resend.emails.send({
-        from,
-        to,
-        ...(cc?.length ? { cc } : {}),
-        subject: `RSVP reçu — ${guestName}`,
-        html: rsvpEmailHtml(guestName, menuSummary, isSolo, guestCount),
+    if (smtpPass) {
+      const port = Number(process.env.SMTP_PORT) || 465
+      const transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST?.trim() || "smtp.gmail.com",
+        port,
+        secure: port === 465,
+        auth: {
+          user: process.env.SMTP_USER?.trim() || from,
+          pass: smtpPass,
+        },
       })
 
-      if (response.error) {
-        console.error("Resend email error:", response.error)
+      try {
+        await transporter.sendMail({
+          from,
+          to,
+          ...(cc?.length ? { cc } : {}),
+          subject: `RSVP reçu — ${guestName}`,
+          html: rsvpEmailHtml(guestName, menuSummary, isSolo, guestCount),
+        })
+      } catch (mailErr) {
+        console.error("Nodemailer send error:", mailErr)
       }
     } else {
-      console.log("RESEND_API_KEY not set — skipping email, RSVP data:", {
+      console.log("SMTP_PASS not set — skipping email, RSVP data:", {
         guestName,
         guestCount,
         menu1Count,

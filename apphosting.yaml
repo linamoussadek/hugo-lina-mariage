@@ -1,31 +1,23 @@
-# Firebase App Hosting (Next.js + API routes).
-# Guide: https://firebase.google.com/docs/app-hosting/get-started
-#
-# 1. Replace the project id in .firebaserc (or run: firebase use YOUR_PROJECT_ID).
-# 2. In Firebase Console → Build → App Hosting → Create backend → connect this GitHub repo.
-# 3. Store your Resend API key in Secret Manager (recommended), or only in Console → Environment:
-#    npx firebase-tools@15 apphosting:secrets:set RESEND_API_KEY
-#    (paste the key when prompted; grant access if asked)
-#    Alternatively, add RESEND_API_KEY under the backend Environment in the console (overrides this file).
-# 4. In Resend: verify your domain, then set RESEND_FROM_EMAIL to e.g. "Mariage <rsvp@yourdomain.com>".
-
+# Settings for Backend (on Cloud Run).
+# See https://firebase.google.com/docs/app-hosting/configure#cloud-run
 runConfig:
   minInstances: 0
-  maxInstances: 10
-  concurrency: 80
-  cpu: 1
-  memoryMiB: 512
+  # maxInstances: 100
+  # concurrency: 80
+  # cpu: 1
+  # memoryMiB: 512
 
-env:
-  - variable: RESEND_API_KEY
-    secret: RESEND_API_KEY
-    availability:
-      - RUNTIME
-  - variable: RESEND_FROM_EMAIL
-    value: "onboarding@resend.dev"
-    availability:
-      - RUNTIME
-  - variable: RSVP_NOTIFY_EMAIL
-    value: "moussadek.lina45@gmail.com"
-    availability:
-      - RUNTIME
+# Environment variables and secrets.
+# env:
+  # Configure environment variables.
+  # See https://firebase.google.com/docs/app-hosting/configure#user-defined-environment
+  # - variable: MESSAGE
+  #   value: Hello world!
+  #   availability:
+  #     - BUILD
+  #     - RUNTIME
+
+  # Grant access to secrets in Cloud Secret Manager.
+  # See https://firebase.google.com/docs/app-hosting/configure#secret-parameters
+  # - variable: MY_SECRET
+  #   secret: mySecretRef
