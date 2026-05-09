@@ -38,11 +38,11 @@ function buildMenuSummary(body: {
   if (isSolo) {
     return soloMenu === 1
       ? "Menu 1 — Rôti de boeuf baron, sauce demi-glace"
-      : "Menu 2 — Poitrine de boeuf farcie aux épinards, sauce suprême"
+      : "Menu 2 — Poitrine de poulet farcie aux épinards et champignons"
   }
   let s = ""
   if (menu1Count > 0) s += `${menu1Count}x Menu 1 — Rôti de boeuf baron, sauce demi-glace\n`
-  if (menu2Count > 0) s += `${menu2Count}x Menu 2 — Poitrine de boeuf farcie aux épinards`
+  if (menu2Count > 0) s += `${menu2Count}x Menu 2 — Poitrine de poulet farcie aux épinards et champignons`
   return s
 }
 
