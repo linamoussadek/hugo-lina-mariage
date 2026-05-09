@@ -162,7 +162,7 @@ export function RSVPSection({ guestName = "Giguère", maxGuests = 4, isSolo = fa
                     <div className="space-y-3">
                       {([
                         { id: 1, label: "Menu 1", desc: "Rôti de bœuf baron, sauce demi-glace" },
-                        { id: 2, label: "Menu 2", desc: "Poitrine de bœuf farcie aux épinards, sauce suprême" },
+                        { id: 2, label: "Menu 2", desc: "Poitrine de poulet farcie aux épinards et champignons" },
                       ] as const).map(({ id, label, desc }) => (
                         <motion.button
                           key={id}
@@ -218,7 +218,7 @@ export function RSVPSection({ guestName = "Giguère", maxGuests = 4, isSolo = fa
                       {/* Menu 2 */}
                       <div className="p-4 bg-secondary/50 rounded-lg">
                         <h4 className="font-medium mb-1 text-foreground">
-                          Menu 2 : Poitrine de bœuf farcie aux épinards, sauce suprême
+                          Menu 2 : Poitrine de poulet farcie aux épinards et champignons
                         </h4>
                         <div className="flex items-center justify-between mt-3">
                           <span className="text-sm text-muted-foreground">Nombre de personnes</span>
@@ -233,13 +233,6 @@ export function RSVPSection({ guestName = "Giguère", maxGuests = 4, isSolo = fa
                           </div>
                         </div>
                       </div>
-
-                      {/* Validation hint */}
-                      {totalMenus < guestCount && (
-                        <p className="text-sm text-amber-600 mt-2">
-                          Veuillez sélectionner un menu pour {guestCount - totalMenus} personne{guestCount - totalMenus > 1 ? "s" : ""} de plus.
-                        </p>
-                      )}
                     </div>
                   )}
                 </CardContent>
@@ -406,7 +399,7 @@ export function RSVPSection({ guestName = "Giguère", maxGuests = 4, isSolo = fa
                       <p className="font-serif text-foreground">
                         {soloMenu === 1
                           ? "Menu 1 — Roti de boeuf baron, sauce demi-glace"
-                          : "Menu 2 — Poitrine de boeuf farcie aux epinards, sauce supreme"}
+                          : "Menu 2 — Poitrine de poulet farcie aux épinards et champignons"}
                       </p>
                     ) : (
                       <div className="space-y-0.5">
@@ -417,7 +410,7 @@ export function RSVPSection({ guestName = "Giguère", maxGuests = 4, isSolo = fa
                         )}
                         {menu2Count > 0 && (
                           <p className="font-serif text-foreground">
-                            {menu2Count}x Menu 2 — Poitrine de boeuf farcie
+                            {menu2Count}x Menu 2 — Poitrine de poulet farcie aux épinards et champignons
                           </p>
                         )}
                       </div>
