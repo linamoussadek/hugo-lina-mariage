@@ -11,7 +11,7 @@ interface TimeLeft {
 }
 
 function calculateTimeLeft(): TimeLeft {
-  const weddingDate = new Date("2026-06-13T16:00:00")
+  const weddingDate = new Date("2026-06-13T15:40:00")
   const now = new Date()
   const difference = weddingDate.getTime() - now.getTime()
   
@@ -121,7 +121,7 @@ export function CountdownSection() {
           transition={{ delay: 0.5 }}
           className="text-center mt-12 text-xl md:text-2xl text-muted-foreground italic"
         >
-          13 Juin 2026 à 16h00
+          13 Juin 2026 à 15h40
         </motion.p>
       </div>
     </section>

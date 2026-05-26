@@ -368,7 +368,7 @@ export function RSVPSection({ guestName = "Giguère", maxGuests = 4, isSolo = fa
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground">Date</p>
-                    <p className="font-serif text-foreground">Samedi 13 juin 2026 a 16h00</p>
+                    <p className="font-serif text-foreground">Samedi 13 juin 2026 à 15h40</p>
                   </div>
                 </div>
 

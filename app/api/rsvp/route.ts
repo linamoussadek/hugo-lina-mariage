@@ -78,7 +78,7 @@ function rsvpEmailHtml(guestName: string, menuSummary: string, isSolo: boolean, 
           </div>
 
           <div style="text-align: center; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 20px; color: #999; font-size: 12px;">
-            <p style="margin: 0;">Mariage — Samedi 13 juin 2026 à 16h00</p>
+            <p style="margin: 0;">Mariage — Samedi 13 juin 2026 à 15h40</p>
             <p style="margin: 4px 0 0;">Chez les Blouin, Ottawa</p>
           </div>
         </div>

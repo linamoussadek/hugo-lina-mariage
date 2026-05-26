@@ -95,7 +95,7 @@ export function DateLocationSection() {
                 2026
               </p>
               <p className="text-sm font-sans tracking-widest uppercase mt-1" style={{ color: "oklch(0.5 0.05 60)" }}>
-                à 16h00
+                à 15h40
               </p>
             </motion.div>
 
