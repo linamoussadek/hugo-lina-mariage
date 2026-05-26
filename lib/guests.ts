@@ -15,6 +15,7 @@ export const guests: Guest[] = [
   { slug: "mathias-corbeil",   greeting: "Cher Mathias",            label: "Mathias Corbeil",   inviteText: "Tu es chaleureusement convié au mariage de",       maxGuests: 1, isSolo: true  },
   { slug: "jean-francois",     greeting: "Cher Jean-François",      label: "Jean-François",     inviteText: "Tu es chaleureusement convié au mariage de",       maxGuests: 1, isSolo: true  },
   { slug: "athena-couture",    greeting: "Chère Athéna",            label: "Athéna Couture",    inviteText: "Tu es chaleureusement conviée au mariage de",      maxGuests: 1, isSolo: true  },
+  { slug: "melanie",          greeting: "Chère Mélanie",            label: "Mélanie",           inviteText: "Tu es chaleureusement conviée au mariage de",      maxGuests: 1, isSolo: true  },
   { slug: "gilles-et-solange", greeting: "Chers Gilles et Solange", label: "Gilles & Solange",  inviteText: "Vous êtes chaleureusement conviés au mariage de",  maxGuests: 2, isSolo: false },
 ]
 
